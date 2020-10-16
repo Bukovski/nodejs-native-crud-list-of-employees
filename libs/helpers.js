@@ -12,4 +12,15 @@ helpers.parseJsonToObject = function(str) {
 };
 
 
+helpers.arrayRemove = function (arr, id) {
+  return arr.filter(function (worker) {
+    return worker.id !== id;
+  });
+}
+
+helpers.isNumber = function (num) {
+  return !isNaN(parseFloat(num)) && isFinite(num);
+}
+
+
 module.exports = helpers;

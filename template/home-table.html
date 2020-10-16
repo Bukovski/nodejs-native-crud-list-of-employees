@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>
   
-  <link rel="stylesheet" href="bootstrap.min.css">
+  <link rel="stylesheet" href="public/bootstrap.min.css">
   <style>
     .table {
       max-width: 600px;
@@ -27,11 +27,11 @@
     <th>удаление</th>
   </tr>
   <tr v-for="(worker, index) in workers">
-    <td>{{ index + 1 }}</td>
+    <td>{{ worker.id }}</td>
     <td>{{ worker.name }}</td>
     <td>{{ worker.age }}</td>
     <td>{{ worker.salary }}</td>
-    <td><a href="" @click="removeWorker(index, $event)">удалить</a></td>
+    <td><a href="" @click="removeWorker(worker.id, $event)">удалить</a></td>
   </tr>
   </tbody>
 </table>
@@ -44,15 +44,13 @@
 			workers: []
 		},
     methods: {
-	    removeWorker: function (index, event) {
+	    removeWorker: function (id, event) {
 	    	event.preventDefault();
 		
-		    axios.post('/api/workers', { workerId: index })
+		    axios.post('/api/workers', { workerId: id })
 			    .then((response) => {
 				    this.workers = response.data;
 			    });
-		    
-	    	console.log(index)
       }
     },
 		created: function () {

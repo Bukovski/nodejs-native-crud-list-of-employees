@@ -4,7 +4,7 @@ const path = require('path');
 const { URL } = require('url');
 const { StringDecoder } = require('string_decoder');
 
-const { routes } = require('./routes');
+const routes = require('./routes');
 const { parseJsonToObject } = require('./helpers');
 const { development } = require('./config');
 
@@ -25,24 +25,13 @@ server.switchHandler = function (req, res) {
 	const headers = req.headers;
 	
 	const _baseURL = 'http://' + headers.host + '/';
-	let { pathname, search: queryStringObject } = new URL(_url, _baseURL);
+	const { pathname, search: queryStringObject } = new URL(_url, _baseURL);
+	const trimmedPath = pathname.replace(/^\/+|\/+$/g, '');
 	
 	req.setEncoding("utf8");
 	
-	try {
-		pathname = decodeURIComponent(pathname); //we encode Russian letters and unclear symbols
-	} catch(e) {
-		method = 'na'
-	}
-	
-	if (~pathname.indexOf('\0')) { //zero byte in string
-		method = 'na'
-	}
 	
 	console.log(method, pathname, queryStringObject)
-	
-	const routeSwitcher = routes[ pathname ];
-	
 	
 	
 	const decoder = new StringDecoder('utf-8');
@@ -55,15 +44,30 @@ server.switchHandler = function (req, res) {
 	req.on('end', function() {
 		buffer += decoder.end();
 		
+		const routeSwitcher = router[ trimmedPath ] ? router[ trimmedPath ] : routes.notFound;
 		
 		const data = {
-			'pathname' : pathname,
+			'pathname' : trimmedPath,
 			'queryStringObject' : queryStringObject,
 			'method' : method,
 			'headers' : headers,
 			'payload' : parseJsonToObject(buffer)
 		};
 		
+		routeSwitcher(data, function(statusCode, payload) {
+			statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
+			payload = typeof(payload) == 'object'? payload : {};
+			
+			const payloadString = JSON.stringify(payload);
+			
+			res.setHeader('Content-Type', 'application/json');
+			res.writeHead(statusCode);
+			res.end(payloadString);
+			
+			console.log("==> response: ", statusCode, payloadString);
+		});
+		
+		/*
 		if (routeSwitcher !== undefined) {
 			req.data = data;
 			
@@ -83,8 +87,18 @@ server.switchHandler = function (req, res) {
 		} else {
 			routes[ 'na' ](req, res);
 		}
+		*/
 	})
 }
+
+
+const router = {
+	'' : routes.home,
+	'home' : routes.home,
+	'404' : routes.notFound,
+	'api/workers' : routes.workers
+};
+
 
 server.init = function () {
 	server.httpServer.listen(development.httpPort);

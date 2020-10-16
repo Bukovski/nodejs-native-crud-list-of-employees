@@ -4,11 +4,20 @@
   <meta charset="UTF-8">
   <title>Table workers</title>
   
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>
+  
   <link rel="stylesheet" href="bootstrap.min.css">
+  <style>
+    .table {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 <body>
 
-<table class="table table-bordered">
+<table class="table table-bordered v-wrapper">
   <tbody>
   <tr>
     <th>id</th>
@@ -17,50 +26,43 @@
     <th>salary</th>
     <th>удаление</th>
   </tr>
-  <tr>
-    <td>1</td>
-    <td>Дима</td>
-    <td>23</td>
-    <td>400</td>
-    <td><a href="">удалить</a></td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>Петя</td>
-    <td>25</td>
-    <td>500</td>
-    <td><a href="">удалить</a></td>
-  </tr>
-  <tr>
-    <td>3</td>
-    <td>Вася</td>
-    <td>23</td>
-    <td>500</td>
-    <td><a href="">удалить</a></td>
-  </tr>
-  <tr>
-    <td>4</td>
-    <td>Коля</td>
-    <td>30</td>
-    <td>1000</td>
-    <td><a href="">удалить</a></td>
-  </tr>
-  <tr>
-    <td>5</td>
-    <td>Иван</td>
-    <td>27</td>
-    <td>500</td>
-    <td><a href="">удалить</a></td>
-  </tr>
-  <tr>
-    <td>6</td>
-    <td>Кирилл</td>
-    <td>28</td>
-    <td>1000</td>
-    <td><a href="">удалить</a></td>
+  <tr v-for="(worker, index) in workers">
+    <td>{{ index + 1 }}</td>
+    <td>{{ worker.name }}</td>
+    <td>{{ worker.age }}</td>
+    <td>{{ worker.salary }}</td>
+    <td><a href="" @click="removeWorker(index, $event)">удалить</a></td>
   </tr>
   </tbody>
 </table>
 
+
+<script>
+	new Vue({
+		el: '.v-wrapper',
+		data: {
+			workers: []
+		},
+    methods: {
+	    removeWorker: function (index, event) {
+	    	event.preventDefault();
+		
+		    axios.post('/api/workers', { workerId: index })
+			    .then((response) => {
+				    this.workers = response.data;
+			    });
+		    
+	    	console.log(index)
+      }
+    },
+		created: function () {
+			axios.get('/api/workers')
+				.then((response) => {
+					this.workers = response.data;
+				});
+		},
+	});
+
+</script>
 </body>
 </html>

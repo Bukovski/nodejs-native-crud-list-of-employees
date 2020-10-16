@@ -2,7 +2,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const { StringDecoder } = require('string_decoder');
+
 const { routes } = require('./routes');
+const { parseJsonToObject } = require('./helpers');
 const { development } = require('./config');
 
 
@@ -39,33 +42,48 @@ server.switchHandler = function (req, res) {
 	console.log(method, pathname, queryStringObject)
 	
 	const routeSwitcher = routes[ pathname ];
-
-	const data = {
-		'pathname' : pathname,
-		'queryStringObject' : queryStringObject,
-		'method' : method,
-		'headers' : headers
-	};
 	
-	if (routeSwitcher !== undefined) {
-		req.data = data;
+	
+	
+	const decoder = new StringDecoder('utf-8');
+	let buffer = '';
+	
+	req.on('data', function(data) {
+		buffer += decoder.write(data);
+	});
+	
+	req.on('end', function() {
+		buffer += decoder.end();
 		
-		routeSwitcher(req, res);
-	} else if (req.url.match(/.css$/)) {
-		const cssPath = path.join(publicDir, req.url);
-		const fileStream = fs.createReadStream(cssPath, 'UTF-8');
 		
-		fileStream.on('error', function(err) {
-			console.error("ERROR:" + err);
-			res.end();
-		})
+		const data = {
+			'pathname' : pathname,
+			'queryStringObject' : queryStringObject,
+			'method' : method,
+			'headers' : headers,
+			'payload' : parseJsonToObject(buffer)
+		};
 		
-		res.writeHead(200, {"Content-Type" : "text/css"});
-		
-		fileStream.pipe(res);
-	} else {
-		routes[ 'na' ](req, res);
-	}
+		if (routeSwitcher !== undefined) {
+			req.data = data;
+			
+			routeSwitcher(req, res);
+		} else if (req.url.match(/.css$/)) {
+			const cssPath = path.join(publicDir, req.url);
+			const fileStream = fs.createReadStream(cssPath, 'UTF-8');
+			
+			fileStream.on('error', function(err) {
+				console.error("ERROR:" + err);
+				res.end();
+			})
+			
+			res.writeHead(200, {"Content-Type" : "text/css"});
+			
+			fileStream.pipe(res);
+		} else {
+			routes[ 'na' ](req, res);
+		}
+	})
 }
 
 server.init = function () {

@@ -46,11 +46,35 @@ const routes = {
 			}
 		});
 	},
-	'/api/users': (req, res) => {
-		const users = [{name: 'John', age: 27}, {name: 'David', age: 37}];
+	'/api/workers': (req, res) => {
+		const workers = [
+			{ name: 'Дима', age: 23, salary: 400 },
+			{ name: 'Вася', age: 25, salary: 500 },
+			{ name: 'Коля', age: 30, salary: 1000 },
+			{ name: 'Иван', age: 27, salary: 500 },
+			{ name: 'Кирилл', age: 28, salary: 1000 }
+		]
 		
-		res.writeHead(200, { 'Content-Type': 'application/json' });
-		res.end(JSON.stringify(users));
+		const listMethods = {
+			'get': () => {
+				res.writeHead(200, { 'Content-Type': 'application/json' });
+				res.end(JSON.stringify(workers));
+			},
+			'post': () => {
+				console.log("POST", req.data.payload.workerId);
+				
+				res.writeHead(200, { 'Content-Type': 'application/json' });
+				res.end(JSON.stringify(workers));
+			},
+			'put': () => {
+				console.log("PUT", req.data.payload.workerId);
+				
+				res.writeHead(200, { 'Content-Type': 'application/json' });
+				res.end(JSON.stringify(workers));
+			},
+		}
+		
+		listMethods[ req.data.method ]();
 	},
 	'na': (req, res) => {
 		renderHTML(templateDir + '404.html', res, 404);

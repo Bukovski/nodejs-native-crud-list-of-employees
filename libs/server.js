@@ -9,7 +9,6 @@ const { parseJsonToObject } = require('./helpers');
 const { development } = require('./config');
 
 
-const publicDir = __dirname + '/../public/';
 
 
 const server = {};
@@ -44,7 +43,8 @@ server.switchHandler = function (req, res) {
 	req.on('end', function() {
 		buffer += decoder.end();
 		
-		const routeSwitcher = router[ trimmedPath ] ? router[ trimmedPath ] : routes.notFound;
+		let routeSwitcher = router[ trimmedPath ] ? router[ trimmedPath ] : routes.notFound;
+		routeSwitcher = trimmedPath.includes('public/') ? router.public : routeSwitcher;
 		
 		const data = {
 			'pathname' : trimmedPath,
@@ -54,17 +54,62 @@ server.switchHandler = function (req, res) {
 			'payload' : parseJsonToObject(buffer)
 		};
 		
-		routeSwitcher(data, function(statusCode, payload) {
+		routeSwitcher(data, function(statusCode, payload, contentType) {
 			statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
-			payload = typeof(payload) == 'object'? payload : {};
+			contentType = typeof(contentType) == 'string' ? contentType : 'json';
 			
-			const payloadString = JSON.stringify(payload);
 			
-			res.setHeader('Content-Type', 'application/json');
+			let payloadString = '';
+			
+			if (contentType === 'json') {
+				res.setHeader('Content-Type', 'application/json');
+				payload = typeof(payload) == 'object'? payload : {};
+				
+				payloadString = JSON.stringify(payload);
+			}
+			
+			if (contentType === 'html') {
+				res.setHeader('Content-Type', 'text/html');
+				
+				payloadString = typeof(payload) == 'string'? payload : '';
+			}
+			
+			/*******************************************************/
+			
+			
+			if (contentType === 'favicon') {
+				res.setHeader('Content-Type', 'image/x-icon');
+				payloadString = typeof(payload) !== 'undefined' ? payload : '';
+			}
+			
+			if (contentType === 'plain') {
+				res.setHeader('Content-Type', 'text/plain');
+				payloadString = typeof(payload) !== 'undefined' ? payload : '';
+			}
+			
+			if (contentType === 'css') {
+				res.setHeader('Content-Type', 'text/css');
+				payloadString = typeof(payload) !== 'undefined' ? payload : '';
+			}
+			
+			if (contentType === 'png') {
+				res.setHeader('Content-Type', 'image/png');
+				payloadString = typeof(payload) !== 'undefined' ? payload : '';
+			}
+			
+			if (contentType === 'jpg') {
+				res.setHeader('Content-Type', 'image/jpeg');
+				payloadString = typeof(payload) !== 'undefined' ? payload : '';
+			}
+			
 			res.writeHead(statusCode);
 			res.end(payloadString);
 			
-			console.log("==> response: ", statusCode, payloadString);
+			if(statusCode === 200){
+				console.log('\x1b[32m%s\x1b[0m',method.toUpperCase()+' /'+trimmedPath+' '+statusCode);
+			} else {
+				console.log('\x1b[31m%s\x1b[0m',method.toUpperCase()+' /'+trimmedPath+' '+statusCode);
+			}
 		});
 		
 		/*
@@ -84,8 +129,6 @@ server.switchHandler = function (req, res) {
 			res.writeHead(200, {"Content-Type" : "text/css"});
 			
 			fileStream.pipe(res);
-		} else {
-			routes[ 'na' ](req, res);
 		}
 		*/
 	})
@@ -96,7 +139,9 @@ const router = {
 	'' : routes.home,
 	'home' : routes.home,
 	'404' : routes.notFound,
-	'api/workers' : routes.workers
+	'api/workers' : routes.workers,
+	'public' : routes.public,
+	'favicon.ico' : routes.favicon,
 };
 
 

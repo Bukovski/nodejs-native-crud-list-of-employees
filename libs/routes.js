@@ -23,7 +23,66 @@ routes.home = function(data, callback) {
 };
 
 routes.notFound = function(data, callback) {
+	// callback(404, undefined, 'html');
 	callback(404);
+};
+
+// Favicon
+routes.favicon = function(data, callback) {
+	if(data.method === 'get'){
+		getStaticAsset('favicon.ico',function(err,data){
+			if(!err && data){
+				// Callback the data
+				callback(200,data,'favicon');
+			} else {
+				callback(500);
+			}
+		});
+	} else {
+		callback(405);
+	}
+};
+
+routes.public = function(data,callback){
+	if(data.method === 'get'){
+		// Get the filename being requested
+		const trimmedAssetName = data.trimmedPath.replace('public/', '').trim();
+		
+		if (trimmedAssetName.length > 0) {
+			// Read in the asset's data
+			getStaticAsset(trimmedAssetName, function(err,data) {
+				if (!err && data) {
+					
+					let contentType = 'plain'; //default 'Content-Type'
+					
+					if (trimmedAssetName.includes('.css')) {
+						contentType = 'css';
+					}
+					
+					if (trimmedAssetName.includes('.png')) {
+						contentType = 'png';
+					}
+					
+					if (trimmedAssetName.includes('.jpg')) {
+						contentType = 'jpg';
+					}
+					
+					if (trimmedAssetName.includes('.ico')) {
+						contentType = 'favicon';
+					}
+					
+					callback(200, data, contentType);
+				} else {
+					callback(404);
+				}
+			});
+		} else {
+			callback(404);
+		}
+		
+	} else {
+		callback(405);
+	}
 };
 
 

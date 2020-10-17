@@ -4,37 +4,45 @@
   <meta charset="UTF-8">
   <title>Table workers</title>
   
-<!--  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>-->
-<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>-->
+  <!--  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>-->
+  <!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>-->
   <link rel="stylesheet" href="public/bootstrap.min.css">
   <style>
-    .table {
-      max-width: 600px;
+    .main-wrapper {
+      width: 60%;
       margin: 0 auto;
+      text-align: center;
+    }
+    
+    .table th {
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-<table class="table table-bordered v-wrapper">
-  <tbody>
-  <tr>
-    <th>id</th>
-    <th>name</th>
-    <th>age</th>
-    <th>salary</th>
-    <th>удаление</th>
-  </tr>
-  <tr v-for="(worker, index) in workers">
-    <td>{{ worker.id }}</td>
-    <td>{{ worker.name }}</td>
-    <td>{{ worker.age }}</td>
-    <td>{{ worker.salary }}</td>
-    <td><a href="" @click="removeWorker(worker.id, $event)">удалить</a></td>
-  </tr>
-  </tbody>
-</table>
-
+<div class="main-wrapper">
+  <h1>Table of workers</h1>
+  
+  <table class="table table-bordered v-wrapper">
+    <tbody>
+    <tr>
+      <th>id</th>
+      <th>name</th>
+      <th>age</th>
+      <th>salary</th>
+      <th>remove</th>
+    </tr>
+    <tr v-for="(worker, index) in workers">
+      <td>{{ worker.id }}</td>
+      <td>{{ worker.name }}</td>
+      <td>{{ worker.age }}</td>
+      <td>{{ worker.salary }}</td>
+      <td><a href="" @click="removeWorker(worker.id, $event)">delete</a></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
 
 <script src="public/axios.js"></script>
 <script src="public/vue.js"></script>
@@ -44,16 +52,18 @@
 		data: {
 			workers: []
 		},
-    methods: {
-	    removeWorker: function (id, event) {
-	    	event.preventDefault();
-		
-		    axios.post('/api/workers', { workerId: id })
-			    .then((response) => {
-				    this.workers = response.data;
-			    });
-      }
-    },
+		methods: {
+			removeWorker: function (id, event) {
+				event.preventDefault();
+				
+				axios.post('/api/workers', { workerId: id })
+					.then((response) => {
+						this.workers = this.workers.filter(function (worker) {
+							return worker.id !== id;
+						});
+					});
+			}
+		},
 		created: function () {
 			axios.get('/api/workers')
 				.then((response) => {

@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const helpers = {};
 const publicDir = path.join(__dirname,'/../public/');
+const templatesDir = path.join(__dirname,'/../templates/');
 
 
 // Parse a JSON string to an object in all cases, without throwing
@@ -41,6 +42,24 @@ helpers.getStaticAsset = function(fileName, callback) {
     });
   } else {
     callback('A valid file name was not specified');
+  }
+};
+
+// Get the string content of a template, and use provided data for string interpolation
+helpers.getTemplate = function(templateName, data, callback) {
+  templateName = typeof(templateName) == 'string' && templateName.length > 0 ? templateName : false;
+  data = typeof(data) == 'object' && data !== null ? data : {};
+  
+  if (templateName) {
+    fs.readFile(templatesDir + templateName + '.html', 'utf8', function(err, str) {
+      if (!err && str && str.length > 0) {
+        callback(false, str);
+      } else {
+        callback('No template could be found');
+      }
+    });
+  } else {
+    callback('A valid template name was not specified');
   }
 };
 

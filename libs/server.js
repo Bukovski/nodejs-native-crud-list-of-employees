@@ -19,6 +19,8 @@ server.httpServer = http.createServer(function (req, res) {
 
 
 server.switchHandler = function (req, res) {
+	req.setEncoding("utf8");
+	
 	let method = req.method.toLowerCase();
 	const _url = req.url;
 	const headers = req.headers;
@@ -26,12 +28,6 @@ server.switchHandler = function (req, res) {
 	const _baseURL = 'http://' + headers.host + '/';
 	const { pathname, search: queryStringObject } = new URL(_url, _baseURL);
 	const trimmedPath = pathname.replace(/^\/+|\/+$/g, '');
-	
-	req.setEncoding("utf8");
-	
-	
-	console.log(method, pathname, queryStringObject)
-	
 	
 	const decoder = new StringDecoder('utf-8');
 	let buffer = '';
@@ -63,19 +59,17 @@ server.switchHandler = function (req, res) {
 			
 			if (contentType === 'json') {
 				res.setHeader('Content-Type', 'application/json');
-				payload = typeof(payload) == 'object'? payload : {};
 				
+				payload = typeof(payload) == 'object'? payload : {};
 				payloadString = JSON.stringify(payload);
 			}
 			
 			if (contentType === 'html') {
 				res.setHeader('Content-Type', 'text/html');
-				
 				payloadString = typeof(payload) == 'string'? payload : '';
 			}
 			
 			/*******************************************************/
-			
 			
 			if (contentType === 'favicon') {
 				res.setHeader('Content-Type', 'image/x-icon');
@@ -97,7 +91,7 @@ server.switchHandler = function (req, res) {
 				payloadString = typeof(payload) !== 'undefined' ? payload : '';
 			}
 			
-			if (contentType === 'jpg') {
+			if ([ 'jpg', 'jpeg' ].includes(contentType)) {
 				res.setHeader('Content-Type', 'image/jpeg');
 				payloadString = typeof(payload) !== 'undefined' ? payload : '';
 			}
@@ -111,26 +105,6 @@ server.switchHandler = function (req, res) {
 				console.log('\x1b[31m%s\x1b[0m',method.toUpperCase()+' /'+trimmedPath+' '+statusCode);
 			}
 		});
-		
-		/*
-		if (routeSwitcher !== undefined) {
-			req.data = data;
-			
-			routeSwitcher(req, res);
-		} else if (req.url.match(/.css$/)) {
-			const cssPath = path.join(publicDir, req.url);
-			const fileStream = fs.createReadStream(cssPath, 'UTF-8');
-			
-			fileStream.on('error', function(err) {
-				console.error("ERROR:" + err);
-				res.end();
-			})
-			
-			res.writeHead(200, {"Content-Type" : "text/css"});
-			
-			fileStream.pipe(res);
-		}
-		*/
 	})
 }
 

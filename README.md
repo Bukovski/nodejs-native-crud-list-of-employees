@@ -11,4 +11,11 @@ It is possible to delete an employee by clicking on the delete button in the tab
 - [Vue.js](https://ru.vuejs.org/) is used to work with the client-side JS
 - [axios.js](https://github.com/axios/axios) to send data to the server from the client
 
+
+## How to start app
+
+- Open the folder with the app in the console
+- enter a command in the `npm run start` in console or `node index.js` to run the server
+- go to the address in the browser [localhost:8080](http://localhost:8080/)
+
 ![main-page](./main-page.jpg)

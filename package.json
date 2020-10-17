@@ -1,7 +1,7 @@
 {
   "name": "nodejs-native-crud-list-of-employees",
   "version": "1.0.0",
-  "description": "project for practicing working with http and CRUD on native NodeJS",
+  "description": "project for practicing working with http on native NodeJS with VueJS",
   "main": "index.js",
   "private": false,
   "homepage": "https://github.com/Bukovski/nodejs-native-crud-list-of-employees",
@@ -11,7 +11,9 @@
     "node js crud",
     "nodejs http example",
     "nodejs example crud",
-    "node.js project example"
+    "node.js project example",
+    "nodejs with vuejs",
+    "vue nodejs example"
   ],
   "engines": {
     "node": "v12.19.0",

@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-native-crud-list-of-employees",
+  "version": "1.0.0",
+  "description": "project for practicing working with http and CRUD on native NodeJS",
+  "main": "index.js",
+  "private": false,
+  "homepage": "https://github.com/Bukovski/nodejs-native-crud-list-of-employees",
+  "author": "Kirill Bukovski (https://github.com/Bukovski)",
+  "license": "UNLICENSED",
+  "keywords": [
+    "node js crud",
+    "nodejs http example",
+    "nodejs example crud",
+    "node.js project example"
+  ],
+  "engines": {
+    "node": "v12.19.0",
+    "npm": "6.14.10"
+  },
+  "scripts": {
+    "start": "echo \"Error: no test specified\" && exit 1"
+  }
+}

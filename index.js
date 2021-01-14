@@ -1,4 +1,5 @@
 const http = require('http');
+const path = require('path');
 const url = require('url');
 const fs = require('fs');
 
@@ -52,13 +53,24 @@ server.on('request', function(req, res) {
 				var img = fs.readFileSync(file); //load image sync!!!
 				
 				res.contentStatus = 204;
-				// res.contentType = 'image/svg+xml';
 				res.contentType = 'image/png';
 				res.contentLength = stat.size;
 				
 				res.end(img, 'binary');
 			}
 		});
+	} else if (req.url.match(/.css$/)) {
+		const cssPath = path.join(publicDir, req.url);
+		const fileStream = fs.createReadStream(cssPath, 'UTF-8');
+		
+		fileStream.on('error', function(err) {
+			console.error("ERROR:" + err);
+			res.end();
+		})
+		
+		res.writeHead(200, {"Content-Type" : "text/css"});
+		
+		fileStream.pipe(res);
 	} else {
 		res.writeHead(404, {'Content-Type': 'text/html'});
 		fs.createReadStream(templateDir + '404.html')

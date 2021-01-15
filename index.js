@@ -9,14 +9,26 @@ const port = 8080;
 const templateDir = __dirname + '/template/';
 const publicDir = __dirname + '/public/';
 
-const server = http.createServer(router);
+const server = http.createServer();
 
 function router(req, res) {
-	const reqMethod = req.method;
+	let reqMethod = req.method;
 	const _url = req.url;
 	
 	const _baseURL = 'http://' + req.headers.host + '/';
-	const { pathname, query } = new URL(_url, _baseURL);
+	let { pathname, query } = new URL(_url, _baseURL);
+	
+	req.setEncoding("utf8");
+	
+	try {
+		pathname = decodeURIComponent(pathname); //we encode Russian letters and unclear symbols
+	} catch(e) {
+		reqMethod = 'NA'
+	}
+	
+	if (~pathname.indexOf('\0')) { //zero byte in string
+		reqMethod = 'NA'
+	}
 	
 	const routeSwitcher = routes[ reqMethod ][ pathname ];
 	
@@ -47,26 +59,10 @@ function router(req, res) {
 const routes = {
 	'GET': {
 		'/': (req, res) => {
-			res.writeHead(200, { 'Content-Type': 'text/html' });
-			fs.createReadStream(templateDir + 'home-table.html')
-				.on('error', function(err) {
-					console.error("ERROR:" + err);
-					
-					res.writeHead(200, {'Content-Type': 'text/plain'});
-					res.end("Could not find or open file for reading \n");
-				})
-				.pipe(res);
+			renderHTML(templateDir + 'home-table.html', res);
 		},
 		'/home': (req, res) => {
-			res.writeHead(200, { 'Content-Type': 'text/html' });
-			fs.createReadStream(templateDir + 'home-table.html')
-				.on('error', function(err) {
-					console.error("ERROR:" + err);
-					
-					res.writeHead(200, {'Content-Type': 'text/plain'});
-					res.end("Could not find or open file for reading \n");
-				})
-				.pipe(res);
+			renderHTML(templateDir + 'home-table.html', res);
 		},
 		'/test': (req, res) => {
 			const paramsUrl = new URLSearchParams(req.url);
@@ -108,16 +104,24 @@ const routes = {
 		},
 	},
 	'NA': (req, res) => {
-		res.writeHead(404, {'Content-Type': 'text/html'});
-		fs.createReadStream(templateDir + '404.html')
-			.on('error', function(err) {
-				console.error("ERROR:" + err);
-				
-				res.end("Could not find or open file for reading \n");
-			})
-			.pipe(res);
+		renderHTML(templateDir + '404.html', 404);
 	}
 }
+
+function renderHTML(path, res, status = 200) {
+	res.writeHead(status, { 'Content-Type': 'text/html' });
+	
+	fs.createReadStream(path)
+		.on('error', function(err) {
+			console.error("ERROR:" + err);
+			
+			res.writeHead(200, {'Content-Type': 'text/plain'});
+			res.end("Could not find or open file for reading \n");
+		})
+		.pipe(res);
+}
+
+server.on('request', router);
 
 server.listen(port);
 
